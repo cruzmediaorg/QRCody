@@ -10,63 +10,6 @@ import QRCode
 import Contacts
 import UIKit
 
-
-// Update the enums to conform to Codable
-enum QRCornerStyle: String, CaseIterable, Codable {
-    case square = "Square"
-    case rounded = "Rounded"
-    case extraRounded = "Extra Rounded"
-}
-
-enum QRPixelStyle: String, CaseIterable, Codable {
-    case square = "Square"
-    case circle = "Circle"
-    case roundedPath = "Rounded Path"
-    case curvePixel = "Curve"
-    case flower = "Flower"
-    case heart = "Heart"
-    case star = "Star"
-    case horizontal = "Horizontal"
-    case vertical = "Vertical"
-    case wave = "Wave"
-}
-
-enum QREyeShape: String, CaseIterable, Codable {
-    case square = "Square"
-    case circle = "Circle"
-    case roundedRect = "Rounded"
-    case leaf = "Leaf"
-    case shield = "Shield"
-    case fireball = "Fireball"
-    case eye = "Eye"
-}
-
-// Add this extension to calculate color brightness
-extension Color {
-    var cgColor: CGColor? {
-        let uiColor = UIColor(self)
-        return uiColor.cgColor
-    }
-    
-    // Calculate relative luminance
-    var brightness: CGFloat {
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-        
-        UIColor(self).getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        
-        // Using relative luminance formula
-        return (0.299 * red + 0.587 * green + 0.114 * blue)
-    }
-    
-    // Determine if color is light or dark
-    var isLight: Bool {
-        return brightness > 0.5
-    }
-}
-
 struct ContentView: View {
     @State private var url = ""
     @State private var qrCode: Image?
@@ -722,42 +665,6 @@ struct QRCodePreviewSection: View {
             }
         }
         .padding(.vertical)
-    }
-}
-
-struct PlaceholderView: View {
-    let contentType: QRContentType
-    let backgroundColor: Color
-
-    private var placeholderText: String {
-        switch contentType {
-        case .url:
-            return "Enter URL to generate QR code"
-        case .wifi:
-            return "Enter WiFi details to generate QR code"
-        case .text:
-            return "Enter text to generate QR code"
-        case .contact:
-            return "Select a contact to generate QR code"
-        }
-    }
-    
-    var body: some View {
-        RoundedRectangle(cornerRadius: 20)
-            .fill(backgroundColor)
-            .frame(width: 280, height: 280)
-            .overlay {
-                VStack(spacing: 16) {
-                    Image(systemName: "qrcode")
-                        .font(.system(size: 60))
-                        .foregroundStyle(backgroundColor.isLight ? .black : .white)
-
-                    Text(placeholderText)
-                        .foregroundStyle(backgroundColor.isLight ? .black : .white)
-                        .font(.callout)
-                }
-            }
-            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
     }
 }
 
@@ -1651,94 +1558,6 @@ struct ColorPickerGradient: View {
         let b = max(0.3, 1.0 - (normalizedY * 0.7))
         
         return Color(hue: Double(h), saturation: Double(s), brightness: Double(b))
-    }
-}
-
-// Add this Toast view
-struct Toast: View {
-    let message: String
-    let icon: String
-    @Binding var isPresented: Bool
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-            Text(message)
-        }
-        .font(.subheadline.bold())
-        .foregroundStyle(.white)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(.black.opacity(0.8))
-        .clipShape(Capsule())
-        .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
-        .transition(.move(edge: .top).combined(with: .opacity))
-    }
-}
-
-// Add this new view for animated background
-struct AnimatedBackground: View {
-    let backgroundColor: Color
-    @State private var phase = 0.0
-    
-    private struct BlobPoint {
-        let x: Double
-        let y: Double
-    }
-    
-    private func calculateBlobPoints(timeNow: Double, index: Int, size: CGSize) -> [BlobPoint] {
-        let rotation = timeNow.remainder(dividingBy: 10) + Double(index) * 2
-        let points = 8
-        var pos = [BlobPoint]()
-        
-        for j in 0...points {
-            let angle = (Double(j) * .pi * 2 / Double(points)) + rotation
-            let radius = size.width/4 + sin(angle * 2 + timeNow) * 20
-            pos.append(BlobPoint(
-                x: size.width/2 + cos(angle) * radius,
-                y: size.height/2 + sin(angle) * radius
-            ))
-        }
-        
-        return pos
-    }
-    
-    private func drawBlob(_ context: GraphicsContext, size: CGSize, timeNow: Double, index: Int) -> Path {
-        var path = Path()
-        let points = calculateBlobPoints(timeNow: timeNow, index: index, size: size)
-        
-        if let firstPoint = points.first {
-            path.move(to: CGPoint(x: firstPoint.x, y: firstPoint.y))
-            for point in points.dropFirst() {
-                path.addLine(to: CGPoint(x: point.x, y: point.y))
-            }
-        }
-        path.closeSubpath()
-        return path
-    }
-    
-    var body: some View {
-        TimelineView(.animation) { timeline in
-            Canvas { context, size in
-                let timeNow = timeline.date.timeIntervalSinceReferenceDate
-                let angle = timeNow.remainder(dividingBy: 2)
-                let scale = CGFloat(1 + sin(angle) * 0.2)
-                
-                let transform = CGAffineTransform.identity
-                    .translatedBy(x: size.width/2, y: size.height/2)
-                    .scaledBy(x: scale, y: scale)
-                    .translatedBy(x: -size.width/2, y: -size.height/2)
-                
-                context.transform = transform
-                
-                for i in 0..<3 {
-                    let blob = drawBlob(context, size: size, timeNow: timeNow, index: i)
-                    context.addFilter(.blur(radius: 50))
-                    context.fill(blob, with: .color(backgroundColor.opacity(0.1)))
-                }
-            }
-        }
-        .ignoresSafeArea()
     }
 }
 
