@@ -8,7 +8,6 @@
 import SwiftUI
 import QRCode
 import Contacts
-import ContactsUI
 import UIKit
 
 struct ContentView: View {
@@ -669,6 +668,421 @@ struct QRCodePreviewSection: View {
     }
 }
 
+// MARK: - URL Input Section
+struct URLInputSection: View {
+    @Binding var url: String
+    var onSubmit: () -> Void
+    @Environment(\.colorScheme) var colorScheme
+    let backgroundColor: Color
+    
+    private var textColor: Color {
+        backgroundColor.isLight ? .black : .white
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("URL")
+                .font(.headline)
+                .foregroundStyle(textColor)
+            
+            HStack(spacing: 12) {
+                HStack {
+                    Image(systemName: "link")
+                        .foregroundStyle(textColor.opacity(0.7))
+                    
+                    TextField("Enter URL", text: $url)
+                        .textFieldStyle(.plain)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .foregroundStyle(textColor)
+                        .tint(textColor)
+                        .onChange(of: url) { _, _ in
+                            onSubmit()
+                        }
+                        .submitLabel(.done)
+                    
+                    if !url.isEmpty {
+                        Button {
+                            url = ""
+                            onSubmit()
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(textColor.opacity(0.7))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding()
+                .background(backgroundColor)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(Color.white.opacity(0.2), lineWidth: 0.5)
+                )
+                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                
+                Button {
+                    // Paste from clipboard
+                    if let clipboardString = UIPasteboard.general.string {
+                        url = clipboardString
+                        onSubmit()
+                    }
+                } label: {
+                    Image(systemName: "doc.on.clipboard")
+                        .foregroundStyle(textColor)
+                        .padding(12)
+                        .background(backgroundColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(Color.white.opacity(0.2), lineWidth: 0.5)
+                        )
+                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Customization Section
+
+
+struct StyleButtonsView: View {
+    let cornerStyle: QRCornerStyle
+    let pixelStyle: QRPixelStyle
+    let eyeShape: QREyeShape
+    @Binding var showSheet: Bool
+    @Binding var selectedStyleType: StyleType
+    @Environment(\.colorScheme) var colorScheme
+    let backgroundColor: Color
+    
+    private var textColor: Color {
+        backgroundColor.isLight ? .black : .white
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Style")
+                .font(.headline)
+                .foregroundStyle(textColor)
+            
+            VStack(spacing: 12) {
+                StyleButton(
+                    title: "Corner Style",
+                    value: cornerStyle.rawValue,
+                    backgroundColor: backgroundColor
+                ) {
+                    selectedStyleType = .corner
+                    showSheet = true
+                }
+                
+                StyleButton(
+                    title: "Pixel Style",
+                    value: pixelStyle.rawValue,
+                    backgroundColor: backgroundColor
+                ) {
+                    selectedStyleType = .pixel
+                    showSheet = true
+                }
+                
+                StyleButton(
+                    title: "Eye Style",
+                    value: eyeShape.rawValue,
+                    backgroundColor: backgroundColor
+                ) {
+                    selectedStyleType = .eye
+                    showSheet = true
+                }
+            }
+        }
+    }
+}
+
+struct StyleButton: View {
+    let title: String
+    let value: String
+    let backgroundColor: Color
+    let action: () -> Void
+    
+    private var textColor: Color {
+        backgroundColor.isLight ? .black : .white
+    }
+    
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(title)
+                        .font(.subheadline)
+                        .foregroundStyle(textColor.opacity(0.7))
+                    Text(value)
+                        .font(.body)
+                        .foregroundStyle(textColor)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(textColor.opacity(0.7))
+            }
+            .padding()
+            .background(backgroundColor)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Color.white.opacity(0.4), lineWidth: 0.6)
+            )
+            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct StyleBottomSheet: View {
+    @Binding var cornerStyle: QRCornerStyle
+    @Binding var pixelStyle: QRPixelStyle
+    @Binding var eyeShape: QREyeShape
+    let styleType: StyleType
+    let backgroundColor: Color
+    @Environment(\.dismiss) private var dismiss
+    @State private var isDragging = false
+    
+    // Add temporary state variables to hold selections
+    @State private var tempCornerStyle: QRCornerStyle
+    @State private var tempPixelStyle: QRPixelStyle
+    @State private var tempEyeShape: QREyeShape
+    
+    // Update initializer to use StyleButtonsView.StyleType
+    init(cornerStyle: Binding<QRCornerStyle>,
+         pixelStyle: Binding<QRPixelStyle>,
+         eyeShape: Binding<QREyeShape>,
+         styleType: StyleType,  // Update parameter type
+         backgroundColor: Color) {
+        self._cornerStyle = cornerStyle
+        self._pixelStyle = pixelStyle
+        self._eyeShape = eyeShape
+        self.styleType = styleType
+        self.backgroundColor = backgroundColor
+        
+        // Initialize temporary states
+        self._tempCornerStyle = State(initialValue: cornerStyle.wrappedValue)
+        self._tempPixelStyle = State(initialValue: pixelStyle.wrappedValue)
+        self._tempEyeShape = State(initialValue: eyeShape.wrappedValue)
+    }
+    
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                BackgroundGradientView(backgroundColor: backgroundColor.opacity(0.85))
+                
+                ScrollView {
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 16) {
+                        switch styleType {
+                        case .corner:
+                            ForEach(QRCornerStyle.allCases, id: \.rawValue) { style in
+                                StylePreviewCard(
+                                    title: style.rawValue,
+                                    isSelected: style == tempCornerStyle,
+                                    backgroundColor: backgroundColor,
+                                    preview: {
+                                        PreviewQRCode(cornerStyle: style)
+                                    }
+                                ) {
+                                    tempCornerStyle = style
+                                    cornerStyle = style  // Update actual style immediately
+                                }
+                            }
+                        case .pixel:
+                            ForEach(QRPixelStyle.allCases, id: \.rawValue) { style in
+                                StylePreviewCard(
+                                    title: style.rawValue,
+                                    isSelected: style == tempPixelStyle,
+                                    backgroundColor: backgroundColor,
+                                    preview: {
+                                        PreviewQRCode(pixelStyle: style)
+                                    }
+                                ) {
+                                    tempPixelStyle = style
+                                    pixelStyle = style  // Update actual style immediately
+                                }
+                            }
+                        case .eye:
+                            ForEach(QREyeShape.allCases, id: \.rawValue) { style in
+                                StylePreviewCard(
+                                    title: style.rawValue,
+                                    isSelected: style == tempEyeShape,
+                                    backgroundColor: backgroundColor,
+                                    preview: {
+                                        PreviewQRCode(eyeShape: style)
+                                    }
+                                ) {
+                                    tempEyeShape = style
+                                    eyeShape = style  // Update actual style immediately
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                }
+            }
+            .toolbarBackground(backgroundColor, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(backgroundColor.isLight ? .light : .dark, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") {
+                        // Reset to original values before dismissing
+                        cornerStyle = tempCornerStyle
+                        pixelStyle = tempPixelStyle
+                        eyeShape = tempEyeShape
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct StylePreviewCard: View {
+    let title: String
+    let isSelected: Bool
+    let backgroundColor: Color
+    let preview: () -> any View
+    let action: () -> Void
+    
+    private var textColor: Color {
+        backgroundColor.isLight ? .black : .white
+    }
+    
+    var body: some View {
+        Button(action: action) {
+            VStack {
+                AnyView(preview())
+                    .frame(height: 100)
+                    .padding()
+                    .background(backgroundColor)
+                
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(textColor)
+                    .padding(.bottom, 8)
+            }
+            .background(isSelected ? backgroundColor.opacity(0.8) : backgroundColor.opacity(0.6))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(isSelected ? textColor : .clear, lineWidth: 2)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct PreviewQRCode: View {
+    var cornerStyle: QRCornerStyle?
+    var pixelStyle: QRPixelStyle?
+    var eyeShape: QREyeShape?
+    
+    var body: some View {
+        if let qrCode = generatePreviewQRCode() {
+            qrCode
+                .interpolation(.none)
+                .resizable()
+                .scaledToFit()
+        }
+    }
+    
+    private func generatePreviewQRCode() -> Image? {
+        guard let doc = try? QRCode.Document(
+            utf8String: "PREVIEW",
+            errorCorrection: .high
+        ) else { return nil }
+        
+        // Configure based on which style we're previewing
+        if let cornerStyle = cornerStyle {
+            if let pixelGenerator = doc.design.shape.onPixels as? QRCode.PixelShape.RoundedPath {
+                switch cornerStyle {
+                case .square:
+                    pixelGenerator.cornerRadiusFraction = 0
+                case .rounded:
+                    pixelGenerator.cornerRadiusFraction = 0.5
+                case .extraRounded:
+                    pixelGenerator.cornerRadiusFraction = 1.0
+                }
+            }
+        }
+        
+        if let pixelStyle = pixelStyle {
+            doc.design.shape.onPixels = pixelShape(for: pixelStyle)
+        }
+        
+        if let eyeShape = eyeShape {
+            doc.design.shape.eye = eyeShapeGenerator(for: eyeShape)
+        }
+        
+        // Set colors
+        doc.design.style.onPixels = QRCode.FillStyle.Solid(CGColor(gray: 0, alpha: 1))
+        doc.design.style.background = QRCode.FillStyle.Solid(CGColor(gray: 1, alpha: 1))
+        
+        // Generate image
+        if let cgImage = try? doc.cgImage(CGSize(width: 200, height: 200)) {
+            return Image(uiImage: UIImage(cgImage: cgImage))
+        }
+        
+        return nil
+    }
+    
+    private func pixelShape(for style: QRPixelStyle) -> QRCodePixelShapeGenerator {
+        switch style {
+        case .square:
+            return QRCode.PixelShape.Square()
+        case .circle:
+            return QRCode.PixelShape.Circle()
+        case .roundedPath:
+            return QRCode.PixelShape.RoundedPath()
+        case .curvePixel:
+            return QRCode.PixelShape.CurvePixel()
+        case .flower:
+            return QRCode.PixelShape.Flower()
+        case .heart:
+            return QRCode.PixelShape.Heart()
+        case .star:
+            return QRCode.PixelShape.Star()
+        case .horizontal:
+            return QRCode.PixelShape.Horizontal()
+        case .vertical:
+            return QRCode.PixelShape.Vertical()
+        case .wave:
+            return QRCode.PixelShape.Wave()
+        }
+    }
+    
+    private func eyeShapeGenerator(for shape: QREyeShape) -> QRCodeEyeShapeGenerator {
+        switch shape {
+        case .square:
+            return QRCode.EyeShape.Square()
+        case .circle:
+            return QRCode.EyeShape.Circle()
+        case .roundedRect:
+            return QRCode.EyeShape.RoundedRect()
+        case .leaf:
+            return QRCode.EyeShape.Leaf()
+        case .shield:
+            return QRCode.EyeShape.Shield()
+        case .fireball:
+            return QRCode.EyeShape.Fireball()
+        case .eye:
+            return QRCode.EyeShape.Eye()
+        }
+    }
+}
+
 // MARK: - Action Buttons Section
 struct ActionButtonsSection: View {
     let qrCode: Image?
@@ -850,6 +1264,56 @@ struct ColorCustomizationView: View {
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
+        }
+    }
+}
+
+// Add ImagePicker view
+struct ImagePicker: UIViewControllerRepresentable {
+    @Binding var image: UIImage?
+    var onSelect: () -> Void
+    @Environment(\.dismiss) private var dismiss
+    
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.delegate = context.coordinator
+        picker.sourceType = .photoLibrary
+        picker.allowsEditing = true
+        return picker
+    }
+    
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: ImagePicker
+        
+        init(_ parent: ImagePicker) {
+            self.parent = parent
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let image = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage {
+                // Resize image to prevent assertion error
+                let size = CGSize(width: 60, height: 60)
+                let format = UIGraphicsImageRendererFormat()
+                format.scale = 1
+                
+                let resizedImage = UIGraphicsImageRenderer(size: size, format: format).image { _ in
+                    image.draw(in: CGRect(origin: .zero, size: size))
+                }
+                
+                parent.image = resizedImage
+                parent.onSelect()
+            }
+            parent.dismiss()
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
         }
     }
 }

@@ -28,44 +28,6 @@ enum QRContentType: String, Identifiable, CaseIterable, Codable {
     }
 }
 
-struct WifiNetwork: Equatable, Codable {
-    var ssid: String
-    var password: String
-    var isHidden: Bool
-    var securityType: SecurityType
-    
-    enum SecurityType: String, CaseIterable, Codable, Equatable {
-        case wpa = "WPA/WPA2"
-        case wep = "WEP"
-        case noPassword = "None"
-        
-        var mecard: String {
-            switch self {
-            case .wpa: return "WPA"
-            case .wep: return "WEP"
-            case .noPassword: return "nopass"
-            }
-        }
-    }
-    
-    func generateQRString() -> String {
-        var components = ["WIFI:"]
-        components.append("S:\(ssid)")
-        
-        if securityType != .noPassword {
-            components.append("T:\(securityType.mecard)")
-            components.append("P:\(password)")
-        }
-        
-        if isHidden {
-            components.append("H:true")
-        }
-        
-        components.append(";")
-        return components.joined(separator: ";")
-    }
-}
-
 struct ContactInfo: Codable {
     let firstName: String
     let lastName: String
