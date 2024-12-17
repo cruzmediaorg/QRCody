@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>NSContactsUsageDescription</key>
+  <string>We need access to your contacts to generate QR codes for sharing contact information.</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>We need access to your photos to add logos to QR codes.</string>
+</dict>
+</plist>
