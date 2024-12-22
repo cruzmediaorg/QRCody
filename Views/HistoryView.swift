@@ -7,6 +7,7 @@ struct HistoryView: View {
     var onSelect: (SavedQRCode) -> Void
     @State private var selectedFilter: QRContentType?
     @State private var sortOrder: SortOrder = .newest
+    @State private var searchText = ""
     
     enum SortOrder {
         case newest, oldest, name
@@ -29,9 +30,14 @@ struct HistoryView: View {
     }
     
     private var filteredQRCodes: [SavedQRCode] {
-        let filtered = selectedFilter == nil ? viewModel.savedQRCodes : viewModel.savedQRCodes.filter { $0.contentType == selectedFilter }
+        let typeFiltered = selectedFilter == nil ? viewModel.savedQRCodes : viewModel.savedQRCodes.filter { $0.contentType == selectedFilter }
         
-        return filtered.sorted { first, second in
+        let searchFiltered = searchText.isEmpty ? typeFiltered : typeFiltered.filter { qrCode in
+            qrCode.name.localizedCaseInsensitiveContains(searchText) ||
+            qrCode.url.localizedCaseInsensitiveContains(searchText)
+        }
+        
+        return searchFiltered.sorted { first, second in
             switch sortOrder {
             case .newest:
                 return first.createdAt > second.createdAt
@@ -50,6 +56,29 @@ struct HistoryView: View {
                     EmptyStateView()
                 } else {
                     VStack(spacing: 0) {
+                        // Search bar
+                        HStack {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundStyle(.secondary)
+                                TextField("Search QR codes...", text: $searchText)
+                                    .textFieldStyle(.plain)
+                                
+                                if !searchText.isEmpty {
+                                    Button {
+                                        searchText = ""
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                            .padding(8)
+                            .background(.quaternary)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
+                        .padding()
+                        
                         // Filter chips
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
