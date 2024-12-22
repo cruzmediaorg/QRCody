@@ -22,9 +22,5 @@ struct Toast: View {
 }
 
 #Preview {
-    Toast(
-        message: "QR Code saved to Photos",
-        icon: "checkmark.circle.fill",
-        isPresented: .constant(true)
-    )
+    Toast(message: "QR Code saved!", icon: "checkmark.circle.fill", isPresented: .constant(true))
 } 

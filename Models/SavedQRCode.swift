@@ -1,4 +1,6 @@
 import SwiftUI
+import QRCode
+import UIKit
 
 struct SavedQRCode: Identifiable, Codable {
     let id: UUID
@@ -20,12 +22,12 @@ struct SavedQRCode: Identifiable, Codable {
 
 struct QRCodeStyle: Codable {
     let backgroundColor: CodableColor
-    let cornerStyle: QRCornerStyle
-    let pixelStyle: QRPixelStyle
-    let eyeShape: QREyeShape
+    let cornerStyle: QRCodeCornerStyle
+    let pixelStyle: QRCodePixelStyle
+    let eyeShape: QRCodeEyeShape
     let logoData: Data?
     
-    init(backgroundColor: CodableColor, cornerStyle: QRCornerStyle, pixelStyle: QRPixelStyle, eyeShape: QREyeShape, logoData: Data? = nil) {
+    init(backgroundColor: CodableColor, cornerStyle: QRCodeCornerStyle, pixelStyle: QRCodePixelStyle, eyeShape: QRCodeEyeShape, logoData: Data? = nil) {
         self.backgroundColor = backgroundColor
         self.cornerStyle = cornerStyle
         self.pixelStyle = pixelStyle
@@ -42,11 +44,17 @@ struct CodableColor: Codable {
     let alpha: Double
     
     init(color: Color) {
-        let components = color.cgColor?.components ?? [0, 0, 0, 1]
-        red = Double(components[0])
-        green = Double(components[1])
-        blue = Double(components[2])
-        alpha = Double(components[3])
+        let uiColor = UIColor(color)
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
+        uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)
+        
+        self.red = Double(r)
+        self.green = Double(g)
+        self.blue = Double(b)
+        self.alpha = Double(a)
     }
     
     var color: Color {

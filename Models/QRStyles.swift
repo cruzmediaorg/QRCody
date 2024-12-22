@@ -1,4 +1,10 @@
 import Foundation
+import QRCode
+
+// Typealias to avoid ambiguity with QRCode package types
+typealias QRCodeCornerStyle = QRCornerStyle
+typealias QRCodePixelStyle = QRPixelStyle
+typealias QRCodeEyeShape = QREyeShape
 
 enum QRCornerStyle: String, CaseIterable, Codable {
     case square = "Square"

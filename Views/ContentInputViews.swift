@@ -5,59 +5,62 @@ struct WifiInputView: View {
     @Binding var network: WifiNetwork
     let backgroundColor: Color
     
+    private var textColor: Color {
+        backgroundColor.isLight ? .black : .white
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            InputField(
-                title: "Network Name",
-                text: .init(
-                    get: { network.ssid },
-                    set: { 
-                        var updatedNetwork = network
-                        updatedNetwork.ssid = $0
-                        network = updatedNetwork
-                    }
-                ),
-                icon: "wifi",
-                backgroundColor: backgroundColor
-            )
+            Text("Wi-Fi Network")
+                .font(.headline)
+                .foregroundStyle(textColor)
             
-            InputField(
-                title: "Password",
-                text: .init(
-                    get: { network.password },
-                    set: { 
-                        var updatedNetwork = network
-                        updatedNetwork.password = $0
-                        network = updatedNetwork
+            VStack(spacing: 12) {
+                InputField(
+                    title: "Network Name",
+                    text: Binding(
+                        get: { network.ssid },
+                        set: { network.ssid = $0 }
+                    ),
+                    icon: "wifi",
+                    backgroundColor: backgroundColor
+                )
+                
+                InputField(
+                    title: "Password",
+                    text: Binding(
+                        get: { network.password },
+                        set: { network.password = $0 }
+                    ),
+                    icon: "lock",
+                    isSecure: true,
+                    backgroundColor: backgroundColor
+                )
+                
+                Picker("Security", selection: Binding(
+                    get: { network.securityType },
+                    set: { network.securityType = $0 }
+                )) {
+                    ForEach(WifiNetwork.SecurityType.allCases, id: \.self) { type in
+                        Text(type.rawValue).tag(type)
                     }
-                ),
-                icon: "lock",
-                isSecure: true,
-                backgroundColor: backgroundColor
-            )
-            
-            Picker("Security", selection: .init(
-                get: { network.securityType },
-                set: { 
-                    var updatedNetwork = network
-                    updatedNetwork.securityType = $0
-                    network = updatedNetwork
                 }
-            )) {
-                ForEach(WifiNetwork.SecurityType.allCases, id: \.self) { type in
-                    Text(type.rawValue).tag(type)
-                }
+                .pickerStyle(.segmented)
+                
+                Toggle("Hidden Network", isOn: Binding(
+                    get: { network.isHidden },
+                    set: { network.isHidden = $0 }
+                ))
+                .foregroundStyle(textColor)
             }
-            .pickerStyle(.segmented)
-            
-            Toggle("Hidden Network", isOn: .init(
-                get: { network.isHidden },
-                set: { 
-                    var updatedNetwork = network
-                    updatedNetwork.isHidden = $0
-                    network = updatedNetwork
-                }
-            ))
+            .padding()
+            .background(backgroundColor.opacity(0.3))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Color.white.opacity(0.2), lineWidth: 0.5)
+            )
+            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
         }
         .padding()
     }

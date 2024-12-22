@@ -10,15 +10,17 @@ import QRCode
 import Contacts
 import UIKit
 
+// Remove duplicate enum definitions and use the ones from QRStyles.swift
+
 struct ContentView: View {
     @State private var url = ""
     @State private var qrCode: Image?
-    @State private var cornerStyle = QRCornerStyle.rounded
-    @State private var pixelStyle = QRPixelStyle.square
+    @State private var cornerStyle = QRCodeCornerStyle.rounded
+    @State private var pixelStyle = QRCodePixelStyle.square
     @State private var backgroundColor: Color
     @State private var selectedLogo: UIImage?
     @Environment(\.colorScheme) var colorScheme
-    @State private var eyeShape = QREyeShape.circle
+    @State private var eyeShape = QRCodeEyeShape.circle
     @StateObject private var viewModel = QRCodeViewModel()
     @State private var showingHistory = false
     @State private var contentType: QRContentType = .url
@@ -89,7 +91,7 @@ struct ContentView: View {
             let logo = QRCode.LogoTemplate(
                 image: cgImage,
                 path: path,
-                inset: 12
+                inset: 14
             )
             doc.logoTemplate = logo
         }
@@ -103,7 +105,7 @@ struct ContentView: View {
     }
     
     // Helper function to get pixel shape
-    private func pixelShape(for style: QRPixelStyle) -> QRCodePixelShapeGenerator {
+    private func pixelShape(for style: QRCodePixelStyle) -> QRCodePixelShapeGenerator {
         switch style {
         case .square:
             return QRCode.PixelShape.Square()
@@ -129,7 +131,7 @@ struct ContentView: View {
     }
     
     // Helper function to get eye shape
-    private func eyeShapeGenerator(for shape: QREyeShape) -> QRCodeEyeShapeGenerator {
+    private func eyeShapeGenerator(for shape: QRCodeEyeShape) -> QRCodeEyeShapeGenerator {
         switch shape {
         case .square:
             return QRCode.EyeShape.Square()
@@ -367,9 +369,9 @@ private struct MainContentView: View {
     @Binding var url: String
     @Binding var qrCode: Image?
     @Binding var backgroundColor: Color
-    @Binding var cornerStyle: QRCornerStyle
-    @Binding var pixelStyle: QRPixelStyle
-    @Binding var eyeShape: QREyeShape
+    @Binding var cornerStyle: QRCodeCornerStyle
+    @Binding var pixelStyle: QRCodePixelStyle
+    @Binding var eyeShape: QRCodeEyeShape
     @Binding var contentType: QRContentType
     @Binding var wifiNetwork: WifiNetwork
     @Binding var plainText: String
@@ -505,9 +507,9 @@ private struct MainScrollContent: View {
     @Binding var url: String
     @Binding var qrCode: Image?
     @Binding var backgroundColor: Color
-    @Binding var cornerStyle: QRCornerStyle
-    @Binding var pixelStyle: QRPixelStyle
-    @Binding var eyeShape: QREyeShape
+    @Binding var cornerStyle: QRCodeCornerStyle
+    @Binding var pixelStyle: QRCodePixelStyle
+    @Binding var eyeShape: QRCodeEyeShape
     @Binding var contentType: QRContentType
     @Binding var wifiNetwork: WifiNetwork
     @Binding var plainText: String
@@ -623,9 +625,9 @@ private struct ContentChangeModifier: ViewModifier {
     let plainText: String
     let selectedContact: CNContact?
     let backgroundColor: Color
-    let cornerStyle: QRCornerStyle
-    let pixelStyle: QRPixelStyle
-    let eyeShape: QREyeShape
+    let cornerStyle: QRCodeCornerStyle
+    let pixelStyle: QRCodePixelStyle
+    let eyeShape: QRCodeEyeShape
     let logoImage: UIImage?
     
     func body(content: Content) -> some View {
@@ -748,9 +750,9 @@ struct URLInputSection: View {
 
 
 struct StyleButtonsView: View {
-    let cornerStyle: QRCornerStyle
-    let pixelStyle: QRPixelStyle
-    let eyeShape: QREyeShape
+    let cornerStyle: QRCodeCornerStyle
+    let pixelStyle: QRCodePixelStyle
+    let eyeShape: QRCodeEyeShape
     @Binding var showSheet: Bool
     @Binding var selectedStyleType: StyleType
     @Environment(\.colorScheme) var colorScheme
@@ -837,23 +839,23 @@ struct StyleButton: View {
 }
 
 struct StyleBottomSheet: View {
-    @Binding var cornerStyle: QRCornerStyle
-    @Binding var pixelStyle: QRPixelStyle
-    @Binding var eyeShape: QREyeShape
+    @Binding var cornerStyle: QRCodeCornerStyle
+    @Binding var pixelStyle: QRCodePixelStyle
+    @Binding var eyeShape: QRCodeEyeShape
     let styleType: StyleType
     let backgroundColor: Color
     @Environment(\.dismiss) private var dismiss
     @State private var isDragging = false
     
     // Add temporary state variables to hold selections
-    @State private var tempCornerStyle: QRCornerStyle
-    @State private var tempPixelStyle: QRPixelStyle
-    @State private var tempEyeShape: QREyeShape
+    @State private var tempCornerStyle: QRCodeCornerStyle
+    @State private var tempPixelStyle: QRCodePixelStyle
+    @State private var tempEyeShape: QRCodeEyeShape
     
     // Update initializer to use StyleButtonsView.StyleType
-    init(cornerStyle: Binding<QRCornerStyle>,
-         pixelStyle: Binding<QRPixelStyle>,
-         eyeShape: Binding<QREyeShape>,
+    init(cornerStyle: Binding<QRCodeCornerStyle>,
+         pixelStyle: Binding<QRCodePixelStyle>,
+         eyeShape: Binding<QRCodeEyeShape>,
          styleType: StyleType,  // Update parameter type
          backgroundColor: Color) {
         self._cornerStyle = cornerStyle
@@ -880,7 +882,7 @@ struct StyleBottomSheet: View {
                     ], spacing: 16) {
                         switch styleType {
                         case .corner:
-                            ForEach(QRCornerStyle.allCases, id: \.rawValue) { style in
+                            ForEach(QRCodeCornerStyle.allCases, id: \.rawValue) { style in
                                 StylePreviewCard(
                                     title: style.rawValue,
                                     isSelected: style == tempCornerStyle,
@@ -894,7 +896,7 @@ struct StyleBottomSheet: View {
                                 }
                             }
                         case .pixel:
-                            ForEach(QRPixelStyle.allCases, id: \.rawValue) { style in
+                            ForEach(QRCodePixelStyle.allCases, id: \.rawValue) { style in
                                 StylePreviewCard(
                                     title: style.rawValue,
                                     isSelected: style == tempPixelStyle,
@@ -908,7 +910,7 @@ struct StyleBottomSheet: View {
                                 }
                             }
                         case .eye:
-                            ForEach(QREyeShape.allCases, id: \.rawValue) { style in
+                            ForEach(QRCodeEyeShape.allCases, id: \.rawValue) { style in
                                 StylePreviewCard(
                                     title: style.rawValue,
                                     isSelected: style == tempEyeShape,
@@ -985,9 +987,9 @@ struct StylePreviewCard: View {
 }
 
 struct PreviewQRCode: View {
-    var cornerStyle: QRCornerStyle?
-    var pixelStyle: QRPixelStyle?
-    var eyeShape: QREyeShape?
+    var cornerStyle: QRCodeCornerStyle?
+    var pixelStyle: QRCodePixelStyle?
+    var eyeShape: QRCodeEyeShape?
     
     var body: some View {
         if let qrCode = generatePreviewQRCode() {
@@ -1038,7 +1040,7 @@ struct PreviewQRCode: View {
         return nil
     }
     
-    private func pixelShape(for style: QRPixelStyle) -> QRCodePixelShapeGenerator {
+    private func pixelShape(for style: QRCodePixelStyle) -> QRCodePixelShapeGenerator {
         switch style {
         case .square:
             return QRCode.PixelShape.Square()
@@ -1063,7 +1065,7 @@ struct PreviewQRCode: View {
         }
     }
     
-    private func eyeShapeGenerator(for shape: QREyeShape) -> QRCodeEyeShapeGenerator {
+    private func eyeShapeGenerator(for shape: QRCodeEyeShape) -> QRCodeEyeShapeGenerator {
         switch shape {
         case .square:
             return QRCode.EyeShape.Square()
@@ -1264,56 +1266,6 @@ struct ColorCustomizationView: View {
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
-        }
-    }
-}
-
-// Add ImagePicker view
-struct ImagePicker: UIViewControllerRepresentable {
-    @Binding var image: UIImage?
-    var onSelect: () -> Void
-    @Environment(\.dismiss) private var dismiss
-    
-    func makeUIViewController(context: Context) -> UIImagePickerController {
-        let picker = UIImagePickerController()
-        picker.delegate = context.coordinator
-        picker.sourceType = .photoLibrary
-        picker.allowsEditing = true
-        return picker
-    }
-    
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-        let parent: ImagePicker
-        
-        init(_ parent: ImagePicker) {
-            self.parent = parent
-        }
-        
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            if let image = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage {
-                // Resize image to prevent assertion error
-                let size = CGSize(width: 60, height: 60)
-                let format = UIGraphicsImageRendererFormat()
-                format.scale = 1
-                
-                let resizedImage = UIGraphicsImageRenderer(size: size, format: format).image { _ in
-                    image.draw(in: CGRect(origin: .zero, size: size))
-                }
-                
-                parent.image = resizedImage
-                parent.onSelect()
-            }
-            parent.dismiss()
-        }
-        
-        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            parent.dismiss()
         }
     }
 }
