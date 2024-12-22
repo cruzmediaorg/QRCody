@@ -54,13 +54,13 @@ struct WifiInputView: View {
                 .foregroundStyle(textColor)
             }
             .padding()
-            .background(backgroundColor.opacity(0.3))
+            .background(Color(backgroundColor).opacity(0.3))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .strokeBorder(Color.white.opacity(0.2), lineWidth: 0.5)
             )
-            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+            .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
         }
         .padding()
     }
@@ -85,13 +85,13 @@ struct TextInputView: View {
                 .padding()
                 .foregroundStyle(textColor)
                 .scrollContentBackground(.hidden)
-                .background(backgroundColor.opacity(0.3))
+                .background(Color(backgroundColor).opacity(0.3))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .strokeBorder(Color.white.opacity(0.2), lineWidth: 0.5)
                 )
-                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
         }
         .padding()
     }
@@ -123,13 +123,13 @@ struct ContactPickerView: View {
                             if let email = contact.emailAddresses.first?.value as String? {
                                 Label(email, systemImage: "envelope")
                                     .font(.subheadline)
-                                    .foregroundStyle(textColor.opacity(0.7))
+                                    .foregroundStyle(Color(textColor).opacity(0.7))
                             }
                             
                             if let phone = contact.phoneNumbers.first?.value.stringValue {
                                 Label(phone, systemImage: "phone")
                                     .font(.subheadline)
-                                    .foregroundStyle(textColor.opacity(0.7))
+                                    .foregroundStyle(Color(textColor).opacity(0.7))
                             }
                         }
                         
@@ -140,18 +140,18 @@ struct ContactPickerView: View {
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.title3)
-                                .foregroundStyle(textColor.opacity(0.7))
+                                .foregroundStyle(Color(textColor).opacity(0.7))
                         }
                     }
                 }
                 .padding()
-                .background(backgroundColor.opacity(0.3))
+                .background(Color(backgroundColor).opacity(0.3))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .strokeBorder(Color.white.opacity(0.2), lineWidth: 0.5)
                 )
-                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
             }
             
             Button {
@@ -168,7 +168,7 @@ struct ContactPickerView: View {
                     Spacer()
                     
                     Image(systemName: "chevron.right")
-                        .foregroundStyle(textColor.opacity(0.7))
+                        .foregroundStyle(Color(textColor).opacity(0.7))
                 }
                 .padding()
                 .background(backgroundColor)
@@ -177,7 +177,7 @@ struct ContactPickerView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .strokeBorder(Color.white.opacity(0.2), lineWidth: 0.5)
                 )
-                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
             }
             .buttonStyle(.plain)
             .sheet(isPresented: $showingContactPicker) {
