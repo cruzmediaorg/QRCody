@@ -1,7 +1,7 @@
 import Foundation
 
 struct WifiNetwork: Codable, Equatable {
-    enum SecurityType: String, Codable {
+    enum SecurityType: String, Codable, CaseIterable {
         case wpa = "WPA"
         case wep = "WEP"
         case noPassword = "nopass"
