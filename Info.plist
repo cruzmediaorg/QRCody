@@ -5,6 +5,6 @@
   <key>NSContactsUsageDescription</key>
   <string>We need access to your contacts to generate QR codes for sharing contact information.</string>
   <key>NSPhotoLibraryUsageDescription</key>
-  <string>SWe need access to your photos to add logos to QR codes.</string>
+  <string>We need access to your photos to add logos to QR codes.</string>
 </dict>
 </plist>
